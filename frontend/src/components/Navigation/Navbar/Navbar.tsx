@@ -19,7 +19,7 @@ export function Navbar() {
   return (
     <div className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b pr-4 backdrop-blur">
       {/* Logo */}
-      <div className="flex w-[256px] items-center justify-center">
+      <div className="flex w-[256px] items-center justify-start pl-6">
         <a href="/" className="flex items-center space-x-2">
           <img src="/128x128.png" width={32} height={32} alt="PictoPy Logo" />
           <span className="text-xl font-bold">PictoPy</span>

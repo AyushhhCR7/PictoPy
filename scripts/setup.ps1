@@ -115,13 +115,16 @@ if (-not (Test-Command cmake)) {
 # ---- Set up the frontend ----
 Write-Host "Setting up frontend..." -ForegroundColor Yellow
 try {
-    Set-Location ..\frontend\
+    $frontendPath = Join-Path $PSScriptRoot "..\frontend"
+    if (-not (Test-Path $frontendPath)) { throw "Frontend directory not found at $frontendPath" }
+    
+    Set-Location $frontendPath
     npm install
     
-    Set-Location .\src-tauri\
+    Set-Location "src-tauri"
     cargo build
     
-    Set-Location ..\..
+    Set-Location $PSScriptRoot
     Write-Host "Frontend setup completed successfully." -ForegroundColor Green
 } catch {
     Write-Host "Error setting up frontend: $_" -ForegroundColor Red
@@ -131,7 +134,10 @@ try {
 # ---- Set up the backend using Python 3.12 ----
 Write-Host "Setting up backend..." -ForegroundColor Yellow
 try {
-    Set-Location .\backend\
+    $backendPath = Join-Path $PSScriptRoot "..\backend"
+    if (-not (Test-Path $backendPath)) { throw "Backend directory not found at $backendPath" }
+
+    Set-Location $backendPath
     
     # Create virtual environment
     python -m venv .env
@@ -142,7 +148,7 @@ try {
     python -m pip install -r requirements.txt
     deactivate
     
-    Set-Location ..
+    Set-Location $PSScriptRoot
     
     Write-Host "Backend setup completed successfully." -ForegroundColor Green
 } catch {
@@ -153,7 +159,10 @@ try {
 # ---- Set up the sync-microservice using Python 3.12 ----
 Write-Host "Setting up sync-microservice..." -ForegroundColor Yellow
 try {
-    Set-Location .\sync-microservice\
+    $syncPath = Join-Path $PSScriptRoot "..\sync-microservice"
+    if (-not (Test-Path $syncPath)) { throw "Sync-microservice directory not found at $syncPath" }
+
+    Set-Location $syncPath
     
     # Create virtual environment
     python -m venv .sync-env
@@ -164,7 +173,7 @@ try {
     python -m pip install -r requirements.txt
     deactivate
     
-    Set-Location ..
+    Set-Location $PSScriptRoot
     
     Write-Host "Sync-microservice setup completed successfully." -ForegroundColor Green
 } catch {

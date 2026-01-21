@@ -7,6 +7,12 @@ echo Starting backend server...
 start "" /B run.bat
 cd ..
 
+REM Navigate to the sync-microservice directory
+cd sync-microservice
+echo Starting sync-microservice...
+start "" /B run.bat
+cd ..
+
 REM Wait for a moment before starting the frontend
 timeout /t 5
 
