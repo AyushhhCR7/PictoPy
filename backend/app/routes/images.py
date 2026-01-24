@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import FileResponse
+import os
 from typing import List, Optional
 from app.database.images import db_get_all_images
 from app.schemas.images import ErrorResponse
@@ -128,3 +130,46 @@ class ImageInfoResponse(BaseModel):
     isTagged: bool
     isFavourite: bool
     tags: Optional[List[str]] = None
+
+
+@router.get("/download/{image_id}", response_class=FileResponse)
+def download_image(image_id: str):
+    """
+    Download an image file.
+    """
+    try:
+        logger.info(f"Attempting to download image with ID: {image_id}")
+        
+        # Find image in database
+        images = db_get_all_images()
+        image = next((img for img in images if img["id"] == image_id), None)
+
+        if not image:
+            logger.error(f"Image ID {image_id} not found in database")
+            raise HTTPException(status_code=404, detail="Image not found")
+
+        file_path = image["path"]
+        logger.info(f"Found image. Path: {file_path}")
+        
+        # Verify file exists
+        if not os.path.exists(file_path):
+             logger.error(f"File does not exist on disk at path: {file_path}")
+             raise HTTPException(status_code=404, detail="File not found on disk")
+             
+        # Extract filename (handle both slash types just in case)
+        filename = os.path.basename(file_path.replace("\\", "/"))
+
+        return FileResponse(
+            path=file_path,
+            filename=filename,
+            media_type="application/octet-stream"
+        )
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error downloading image {image_id}: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Internal server error: {str(e)}"
+        )

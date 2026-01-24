@@ -926,6 +926,42 @@
         }
       }
     },
+    "/images/download/{image_id}": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Download Image",
+        "description": "Download an image file.",
+        "operationId": "download_image_images_download__image_id__get",
+        "parameters": [
+          {
+            "name": "image_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Image Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/face-clusters/{cluster_id}": {
       "put": {
         "tags": [

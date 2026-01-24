@@ -21,6 +21,7 @@ import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { useToggleFav } from '../../hooks/useToggleFav';
 import { useLocation } from 'react-router';
 import { ROUTES } from '@/constants/routes';
+import { apiClient } from '@/api/axiosConfig';
 
 export function MediaView({
   onClose,
@@ -47,6 +48,7 @@ export function MediaView({
   const [showInfo, setShowInfo] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(false);
   const [resetSignal, setResetSignal] = useState(0);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Custom hooks
   const { viewState, handlers } = useImageViewControls();
@@ -138,6 +140,52 @@ export function MediaView({
     onToggleInfo: toggleInfo,
   });
 
+  // Download functionality
+  const handleDownload = useCallback(async () => {
+    if (currentImage && currentImage.id) {
+      try {
+        const response = await apiClient.get(
+          `/images/download/${currentImage.id}`,
+          {
+            responseType: 'blob',
+          },
+        );
+
+        // Create blob link to download
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Extract filename or use default
+        let filename = `image-${currentImage.id}.jpg`;
+        const contentDisposition = response.headers['content-disposition'];
+        if (contentDisposition) {
+          const filenameMatch =
+            contentDisposition.match(/filename="?([^"]+)"?/);
+          if (filenameMatch && filenameMatch.length === 2) {
+            filename = filenameMatch[1];
+          }
+        }
+
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        // Show success toast
+        setToastMessage('Image Downloaded Successfully!');
+        setTimeout(() => setToastMessage(null), 3000);
+      } catch (error) {
+        console.error('Download failed', error);
+        setToastMessage('Download Failed');
+        setTimeout(() => setToastMessage(null), 3000);
+      }
+    }
+  }, [currentImage]);
+
   // Early return if no images or invalid index
   if (!images?.length || currentViewIndex === -1 || !currentImage) {
     return null;
@@ -147,6 +195,7 @@ export function MediaView({
   const currentImagePath = currentImage.path;
   // console.log(currentImage);
   const currentImageAlt = `image-${currentViewIndex}`;
+
   return (
     <div className="fixed inset-0 z-50 mt-0 flex flex-col bg-gradient-to-b from-black/95 to-black/98 backdrop-blur-lg">
       {/* Controls */}
@@ -159,6 +208,7 @@ export function MediaView({
         isSlideshowActive={isSlideshowActive}
         onToggleSlideshow={toggleSlideshow}
         onClose={handleClose}
+        onDownload={handleDownload}
         type={type}
       />
 
@@ -219,6 +269,13 @@ export function MediaView({
         currentIndex={currentViewIndex}
         totalImages={totalImages}
       />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 fixed bottom-8 left-1/2 z-[100] -translate-x-1/2 transform rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-medium text-white shadow-lg backdrop-blur-md duration-300">
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }

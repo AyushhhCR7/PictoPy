@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, Folder, Heart, Play, Pause, X } from 'lucide-react';
+import { Info, Folder, Heart, Play, Pause, X, Download } from 'lucide-react';
 
 interface MediaViewControlsProps {
   showInfo: boolean;
@@ -10,6 +10,7 @@ interface MediaViewControlsProps {
   isSlideshowActive: boolean;
   onToggleSlideshow: () => void;
   onClose: () => void;
+  onDownload?: () => void;
   type?: string;
 }
 
@@ -22,6 +23,7 @@ export const MediaViewControls: React.FC<MediaViewControlsProps> = ({
   isSlideshowActive,
   onToggleSlideshow,
   onClose,
+  onDownload,
   type = 'image',
 }) => {
   return (
@@ -36,6 +38,17 @@ export const MediaViewControls: React.FC<MediaViewControlsProps> = ({
       >
         <Info className="h-5 w-5" />
       </button>
+
+      {type === 'image' && onDownload && (
+        <button
+          onClick={onDownload}
+          className="cursor-pointer rounded-full bg-black/50 p-2.5 text-white/90 transition-all duration-200 hover:bg-black/20 hover:text-white hover:shadow-lg"
+          aria-label="Download Image"
+          title="Download Image"
+        >
+          <Download className="h-5 w-5" />
+        </button>
+      )}
 
       <button
         onClick={onOpenFolder}
